@@ -7,6 +7,7 @@ Created on Thu Jul 15 22:26:11 2021
 """
 
 from dataclasses import dataclass
+from typing import List
 
 @dataclass
 class Point:
@@ -14,9 +15,10 @@ class Point:
      y: float
 
 @dataclass
-class ImageMetadata:
+class ImageData:
     name: str
     pointA: Point
     pointB: Point
+    data: List[int]
     
     
