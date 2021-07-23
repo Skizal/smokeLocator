@@ -1,18 +1,10 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jul 15 12:38:13 2021
-
-@author: enrique
-"""
-
 import os
 import random
 import cv2
 import xml.etree.ElementTree as xml
-from utils import ImageData, Point
 
-import time
+
+from utils import ImageData, Point
 
 def getImageAndBbox( file ):
     root = xml.parse( file ).getroot()
@@ -52,7 +44,7 @@ def readAndLoadData( imagesPath, gtPath, imagesToUsePath ):
             image.data = iData
             imageData[image.name] = image
 
-    return imageData
+    return list( imageData.values() )
      
 
 def updateImagesToUse( gtPath, usePath, nImages ):
@@ -65,7 +57,7 @@ def updateImagesToUse( gtPath, usePath, nImages ):
         textFile.write( e + "\n" )
     textFile.close()
 
-
+'''
 testImagesPath = '/home/enrique/tfm/data/day_time_wildfire_v2_2192/images'
 testGTPath = '/home/enrique/tfm/data/day_time_wildfire_v2_2192/annotations/xmls'
 
@@ -75,13 +67,8 @@ trainGTPath = '/home/enrique/tfm/data/SF_dataset_resized_12620/annotations'
 usePath1 = "/home/enrique/tfm/data/SF_dataset_resized_12620/usedImages.txt"
 usePath2 = "/home/enrique/tfm/data/day_time_wildfire_v2_2192/usedImages.txt"
 
-start = time.time_ns()
+updateImagesToUse( trainGTPath, usePath1, 1000)
+updateImagesToUse( testGTPath, usePath2, 250 )
+'''
 
-#updateImagesToUse( trainGTPath, usePath1, 3000 )
-#updateImagesToUse( testGTPath, usePath2, 500 )
-
-trainData = readAndLoadData( trainImagesPath, trainGTPath, usePath1 )
-
-end = time.time_ns()
-
-print( (end-start)/1000000000 )
+#trainData = readAndLoadData( trainImagesPath, trainGTPath, usePath1 )

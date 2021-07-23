@@ -44,21 +44,21 @@ def convert( imagesPath, gtPath, newResX, newResY ):
         print(entry.name)
         changeBboxFromXML( entry.path, newResX, newResY )
 
-    '''
+    
     for entry in os.scandir( imagesPath ):
         print(entry.name)
         image = cv2.imread( entry.path )
         newImage = cv2.resize( image, ( newResX, newResY ) )
         cv2.imwrite( entry.path, newImage )
-    '''
+    
 
-
+'''
 imagesPath = '/home/enrique/tfm/data/day_time_wildfire_v2_2192/images'
 gtPath = '/home/enrique/tfm/data/day_time_wildfire_v2_2192/annotations/xmls'
 
 '''
 imagesPath = '/home/enrique/tfm/data/SF_dataset_resized_12620/images'
 gtPath = '/home/enrique/tfm/data/SF_dataset_resized_12620/annotations'
-'''
+
 
 #convert( imagesPath, gtPath, 640, 480 )
