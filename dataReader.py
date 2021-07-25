@@ -1,8 +1,10 @@
 import os
 import random
-import cv2
+
 import xml.etree.ElementTree as xml
 
+from keras.preprocessing.image import load_img
+import numpy as np
 
 from utils import ImageData, Point
 
@@ -39,9 +41,10 @@ def readAndLoadData( imagesPath, gtPath, imagesToUsePath ):
     for entry in os.scandir( imagesPath ):
         if entry.name in imageData:
             #load the image
-            iData = cv2.imread( entry.path )
             image = imageData[entry.name] 
-            image.data = iData
+            iData = load_img( entry.path )
+            image.data = np.asarray( iData )
+            image.data = np.swapaxes( image.data, 0, 1)
             imageData[image.name] = image
 
     return list( imageData.values() )
@@ -67,8 +70,9 @@ trainGTPath = '/home/enrique/tfm/data/SF_dataset_resized_12620/annotations'
 usePath1 = "/home/enrique/tfm/data/SF_dataset_resized_12620/usedImages.txt"
 usePath2 = "/home/enrique/tfm/data/day_time_wildfire_v2_2192/usedImages.txt"
 
-updateImagesToUse( trainGTPath, usePath1, 1000)
-updateImagesToUse( testGTPath, usePath2, 250 )
+updateImagesToUse( trainGTPath, usePath1, 500 )
+updateImagesToUse( testGTPath, usePath2, 100 )
+
 '''
 
 #trainData = readAndLoadData( trainImagesPath, trainGTPath, usePath1 )

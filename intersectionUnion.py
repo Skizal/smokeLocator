@@ -34,8 +34,14 @@ def intersectionOverUnion( boxGT, boxP ):
     
     return iou
 
+path = "/home/enrique/tfm/data/day_time_wildfire_v2_2192/images/ckb3o09jkwyeg0712le1ami32.jpeg"
+gtF = [0.33125*640, 0.55416*480, 0.421875*640, 0.602083*480]
+predF = [0.2705*640, 0.36906*480, 0.39339*640, 0.6641841*480]
 
-sample = [ Detection( "smoke.jpeg", [549, 169, 639, 275], [500, 100, 550, 200] ) ]
+gt = [int(i) for i in gtF]
+pred = [int(i) for i in predF]
+
+sample = [ Detection( path, gt, pred ) ]
 
 for detection in sample:
     
