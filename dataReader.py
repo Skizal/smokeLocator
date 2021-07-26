@@ -6,7 +6,7 @@ import xml.etree.ElementTree as xml
 from keras.preprocessing.image import load_img
 import numpy as np
 
-from utils import ImageData, Point
+from utils import *
 
 def getImageAndBbox( file ):
     root = xml.parse( file ).getroot()
@@ -17,9 +17,10 @@ def getImageAndBbox( file ):
     ymax = root.find( './/ymax' )
     name = root.find( './/filename' )
     
-    pointA = Point( xmin.text, ymin.text )
-    pointB = Point( xmax.text, ymax.text )
-    image = ImageData( name.text, pointA, pointB, [] )
+    min = Point( float(xmin.text), float(ymin.text) )
+    max = Point( float(xmax.text), float(ymax.text) )
+    box = BoundingBox( min, max )
+    image = ImageData( name.text, '', box, [] )
     
     return image
    
@@ -35,7 +36,7 @@ def readAndLoadData( imagesPath, gtPath, imagesToUsePath ):
         if nameNoXml in imagesToUse:
 
             image = getImageAndBbox( entry.path )
-            print( "Image data: ", image.name, image.pointA.x, image.pointA.y, image.pointB.x, image.pointB.y )
+            print( "Image data: ", image.name, image.box.min.x, image.box.min.y, image.box.max.x, image.box.max.y )
             imageData[image.name] = image
         
     for entry in os.scandir( imagesPath ):
@@ -43,6 +44,7 @@ def readAndLoadData( imagesPath, gtPath, imagesToUsePath ):
             #load the image
             image = imageData[entry.name] 
             iData = load_img( entry.path )
+            image.path = entry.path
             image.data = np.asarray( iData )
             image.data = np.swapaxes( image.data, 0, 1)
             imageData[image.name] = image
@@ -61,14 +63,6 @@ def updateImagesToUse( gtPath, usePath, nImages ):
     textFile.close()
 
 '''
-testImagesPath = '/home/enrique/tfm/data/day_time_wildfire_v2_2192/images'
-testGTPath = '/home/enrique/tfm/data/day_time_wildfire_v2_2192/annotations/xmls'
-
-trainImagesPath = '/home/enrique/tfm/data/SF_dataset_resized_12620/images'
-trainGTPath = '/home/enrique/tfm/data/SF_dataset_resized_12620/annotations'
-
-usePath1 = "/home/enrique/tfm/data/SF_dataset_resized_12620/usedImages.txt"
-usePath2 = "/home/enrique/tfm/data/day_time_wildfire_v2_2192/usedImages.txt"
 
 updateImagesToUse( trainGTPath, usePath1, 500 )
 updateImagesToUse( testGTPath, usePath2, 100 )

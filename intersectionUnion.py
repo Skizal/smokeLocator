@@ -1,17 +1,10 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Jul 13 19:52:38 2021
-
-@author: enrique
-"""
+#Code not actually used, will be removed although should've been already boi
 
 from collections import namedtuple
 import numpy as np
 import cv2
 
 Detection = namedtuple( "Detection", ["image_path", "gt", "pred"] ) 
-
 
 def intersectionOverUnion( boxGT, boxP ):
     
@@ -34,9 +27,9 @@ def intersectionOverUnion( boxGT, boxP ):
     
     return iou
 
-path = "/home/enrique/tfm/data/day_time_wildfire_v2_2192/images/ckb3o09jkwyeg0712le1ami32.jpeg"
-gtF = [0.33125*640, 0.55416*480, 0.421875*640, 0.602083*480]
-predF = [0.2705*640, 0.36906*480, 0.39339*640, 0.6641841*480]
+path = "/home/enrique/tfm/data/day_time_wildfire_v2_2192/images/ckb2l6p8vf0wq07512e28g7kj.jpeg"
+gtF = [0*640, 0.425*480, 0.0921875*640, 0.6*480]
+predF = [85, 191, 91, 369]
 
 gt = [int(i) for i in gtF]
 pred = [int(i) for i in predF]

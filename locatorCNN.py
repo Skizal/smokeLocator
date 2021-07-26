@@ -7,33 +7,22 @@ from keras.optimizers import Adam
 import numpy as np
 
 import dataReader as reader
-from utils import ImageData, Point
+from utils import ImageData, Point, Configuration
 
-outPath = "/home/enrique/tfm/output/"
 
-testImagesPath = '/home/enrique/tfm/data/day_time_wildfire_v2_2192/images'
-testGTPath = '/home/enrique/tfm/data/day_time_wildfire_v2_2192/annotations/xmls'
-testUsePath = "/home/enrique/tfm/data/day_time_wildfire_v2_2192/usedImages.txt"
-
-trainImagesPath = '/home/enrique/tfm/data/SF_dataset_resized_12620/images'
-trainGTPath = '/home/enrique/tfm/data/SF_dataset_resized_12620/annotations'
-trainUsePath = "/home/enrique/tfm/data/SF_dataset_resized_12620/usedImages.txt"
-
-trainData = reader.readAndLoadData( trainImagesPath, trainGTPath, trainUsePath )
+trainData = reader.readAndLoadData( Configuration.trainImages, Configuration.trainGT, Configuration.trainUsage )
 trainImages = [ img.data for img in trainData ]
-trainBbox = [ [img.pointA.x, img.pointA.y, img.pointB.x, img.pointB.y] for img in trainData ]
+trainBbox = [ [ img.box.min.x, img.box.min.y, img.box.max.x, img.box.max.y ] for img in trainData ]
 
-testData = reader.readAndLoadData( testImagesPath, testGTPath, testUsePath )
+testData = reader.readAndLoadData( Configuration.testImages, Configuration.testGT, Configuration.testUsage )
 testImages = [ img.data for img in testData ]
-testBbox = [ [img.pointA.x, img.pointA.y, img.pointB.x, img.pointB.y] for img in testData ]
+testBbox = [ [ img.box.min.x, img.box.min.y, img.box.max.x, img.box.max.y ] for img in testData ]
 
 trainBbox = np.array( trainBbox, dtype = "float32")
 testBbox = np.array( testBbox, dtype = "float32")
 
 trainImages = np.array( trainImages, dtype = "float32") / 255.0
 testImages = np.array( testImages, dtype = "float32") / 255.0 
-
-print( "Hola" )
 
 vgg = VGG16( weights="imagenet", include_top=False, input_tensor=Input( shape=(640, 480, 3) ) )
 print( vgg.summary() )
@@ -59,6 +48,6 @@ H = model.fit( trainImages, trainBbox,
     epochs=5,
     verbose=1)
 
-print( "[INFO] Saving trained model to disk" )
-model.save( outPath + "model", save_format="h5" )
+print( "[INFO] Saving trained model to disk: " + Configuration.output + "model" )
+model.save( Configuration.output + "model", save_format="h5" )
 
