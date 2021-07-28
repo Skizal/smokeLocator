@@ -1,13 +1,7 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jul 15 22:26:11 2021
-
-@author: enrique
-"""
 
 from dataclasses import dataclass
 from typing import List
+import tensorflow as tf
 
 @dataclass
 class Point:
@@ -34,7 +28,13 @@ class Configuration:
      testImages: str = '/home/enrique/tfm/data/day_time_wildfire_v2_2192/images'
      testGT: str = '/home/enrique/tfm/data/day_time_wildfire_v2_2192/annotations/xmls'
      testUsage: str = '/home/enrique/tfm/data/day_time_wildfire_v2_2192/usedImages.txt'
-     output: str = '/home/enrique/tfm/output/'
+     modelPath: str = '/home/enrique/tfm/output/'
+     plotPath: str = '/home/enrique/tfm/output/plot/'
+
+     batchSize: int = 10
+     nEpochs: int = 5
+
+     learningRate: float = 1e-4
 
 @dataclass
 class Detection:
@@ -59,27 +59,85 @@ def getBoxesWithAbsoluteIntegerValues( boxGT, boxP, resX, resY ):
     return boxGT, boxP
 
 
-def intersectionOverUnion( boxGT, boxP ):
+
+def completeIou( boxGT, boxP ):
 
     #determine coordinates of the intersection rectangle
-    xA = max( boxGT.min.x, boxP.min.x )
-    yA = max( boxGT.min.y, boxP.min.y )
-    xB = min( boxGT.max.x, boxP.max.x )
-    yB = min( boxGT.max.y, boxP.max.y )
-    
-    #compute area of intersection rectangle
-    interArea = max( 0, xB - xA + 1) * max( 0, yB - yA + 1 )
+    xA = max( boxGT[0], boxP[0] )
+    yA = max( boxGT[1], boxP[1] )
+    xB = min( boxGT[2], boxP[2] )
+    yB = min( boxGT[3], boxP[3] )
+
+     #compute area of intersection rectangle
+    interArea = max( 0, xB - xA ) * max( 0, yB - yA )
     
     #compute area of Bbox union
-    areaGT = ( boxGT.max.x - boxGT.min.x + 1 ) * ( boxGT.max.y - boxGT.min.y + 1 )
-    areaP = ( boxP.max.x - boxP.min.x + 1 ) * ( boxP.max.y - boxP.min.y + 1 )
+    areaGT = ( boxGT[2] - boxGT[0] ) * ( boxGT[3] - boxGT[1] )
+    areaP = ( boxP[2] - boxP[0] ) * ( boxP[3] - boxP[1] )
     
     unionArea = areaGT + areaP - interArea
     
     iou = interArea / unionArea
+
+    #Get diagonal between box centers
+
+    centerGTX = ( boxGT[0] + boxGT[2] ) * 0.5
+    centerGTY = ( boxGT[1] + boxGT[3] ) * 0.5
+    centerPX = ( boxP[0] + boxP[2] ) * 0.5
+    centerPY = ( boxP[1] + boxP[3] ) * 0.5
+
+    distX = abs( centerPX - centerGTX )
+    distY = abs( centerPY - centerGTY )
+
+    #Get diagonal for enclosing box
+    exA = min( boxGT[0], boxP[0] )
+    eyA = min( boxGT[1], boxP[1] )
+    exB = max( boxGT[2], boxP[2] )
+    eyB = max( boxGT[3], boxP[3] )
+
+    eDistX = abs( exA - exB )
+    eDistY = abs( eyA - eyB )
+
+    centerDis = tf.sqrt( distX**2 + distY**2 )
+    encloseDis = tf.sqrt( eDistX**2 + eDistY**2 )
+
+    diou = iou - ( centerDis**2 / encloseDis**2 )
     
-    return iou
 
 
+def ciouCoef( boxGT, boxP ):
+
+     center_vec = boxGT[..., :2] - boxP[..., :2]
+
+     boxGT = tf.concat([boxGT[..., :2] - boxGT[..., 2:] * 0.5,
+                         boxGT[..., :2] + boxGT[..., 2:] * 0.5], axis=-1)
+     boxP = tf.concat([boxP[..., :2] - boxP[..., 2:] * 0.5,
+                         boxP[..., :2] + boxP[..., 2:] * 0.5], axis=-1)
+
+     boxGT = tf.concat([tf.minimum(boxGT[..., :2], boxGT[..., 2:]),
+                         tf.maximum(boxGT[..., :2], boxGT[..., 2:])], axis=-1)
+     boxP = tf.concat([tf.minimum(boxP[..., :2], boxP[..., 2:]),
+                         tf.maximum(boxP[..., :2], boxP[..., 2:])], axis=-1)
+
+     boxes1_area = (boxGT[..., 2] - boxGT[..., 0]) * (boxGT[..., 3] - boxGT[..., 1])
+     boxes2_area = (boxP[..., 2] - boxP[..., 0]) * (boxP[..., 3] - boxP[..., 1])
+
+     left_up = tf.maximum(boxGT[..., :2], boxP[..., :2])
+     right_down = tf.minimum(boxGT[..., 2:], boxP[..., 2:])
+
+     inter_section = tf.maximum(right_down - left_up, 0.0)
+     inter_area = inter_section[..., 0] * inter_section[..., 1]
+     union_area = boxes1_area + boxes2_area - inter_area
+     iou = inter_area / union_area
+
+     enclose_left_up = tf.minimum(boxGT[..., :2], boxP[..., :2])
+     enclose_right_down = tf.maximum(boxGT[..., 2:], boxP[..., 2:])
+     enclose_vec = enclose_right_down - enclose_left_up
+     center_dis = tf.sqrt( center_vec[..., 0]**2 + center_vec[..., 1]**2 )
+     enclose_dis = tf.sqrt( enclose_vec[..., 0]**2 + enclose_vec[..., 1]**2 )
+
+     diou = iou - ( center_dis / enclose_dis )
+
+     return diou
 
     
