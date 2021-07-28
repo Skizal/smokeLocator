@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 from typing import List
 import tensorflow as tf
+import math
 
 @dataclass
 class Point:
@@ -63,17 +64,17 @@ def getBoxesWithAbsoluteIntegerValues( boxGT, boxP, resX, resY ):
 def completeIou( boxGT, boxP ):
 
     #determine coordinates of the intersection rectangle
-    xA = max( boxGT[0], boxP[0] )
-    yA = max( boxGT[1], boxP[1] )
-    xB = min( boxGT[2], boxP[2] )
-    yB = min( boxGT[3], boxP[3] )
+    xA = max( boxGT.min.x, boxP.min.x )
+    yA = max( boxGT.min.y, boxP.min.y )
+    xB = min( boxGT.max.x, boxP.max.x )
+    yB = min( boxGT.max.y, boxP.max.y )
 
      #compute area of intersection rectangle
     interArea = max( 0, xB - xA ) * max( 0, yB - yA )
     
     #compute area of Bbox union
-    areaGT = ( boxGT[2] - boxGT[0] ) * ( boxGT[3] - boxGT[1] )
-    areaP = ( boxP[2] - boxP[0] ) * ( boxP[3] - boxP[1] )
+    areaGT = ( boxGT.max.x - boxGT.min.x ) * ( boxGT.max.y - boxGT.min.y )
+    areaP = ( boxP.max.x - boxP.min.x ) * ( boxP.max.y - boxP.min.y )
     
     unionArea = areaGT + areaP - interArea
     
@@ -81,33 +82,37 @@ def completeIou( boxGT, boxP ):
 
     #Get diagonal between box centers
 
-    centerGTX = ( boxGT[0] + boxGT[2] ) * 0.5
-    centerGTY = ( boxGT[1] + boxGT[3] ) * 0.5
-    centerPX = ( boxP[0] + boxP[2] ) * 0.5
-    centerPY = ( boxP[1] + boxP[3] ) * 0.5
+    centerGTX = ( boxGT.min.x + boxGT.max.x ) * 0.5
+    centerGTY = ( boxGT.min.y + boxGT.max.y ) * 0.5
+    centerPX = ( boxP.min.x + boxP.max.x ) * 0.5
+    centerPY = ( boxP.min.y + boxP.max.y ) * 0.5
 
     distX = abs( centerPX - centerGTX )
     distY = abs( centerPY - centerGTY )
 
+
     #Get diagonal for enclosing box
-    exA = min( boxGT[0], boxP[0] )
-    eyA = min( boxGT[1], boxP[1] )
-    exB = max( boxGT[2], boxP[2] )
-    eyB = max( boxGT[3], boxP[3] )
+    exA = min( boxGT.min.x, boxP.min.x ) * 1.0
+    eyA = min( boxGT.min.y, boxP.min.y ) * 1.0
+    exB = max( boxGT.max.x, boxP.max.x ) * 1.0
+    eyB = max( boxGT.max.y, boxP.max.y ) * 1.0
 
     eDistX = abs( exA - exB )
     eDistY = abs( eyA - eyB )
 
-    centerDis = tf.sqrt( distX**2 + distY**2 )
-    encloseDis = tf.sqrt( eDistX**2 + eDistY**2 )
+    centerDis = math.sqrt( distX**2 + distY**2 )
+    encloseDis = math.sqrt( eDistX**2 + eDistY**2 )
 
     diou = iou - ( centerDis**2 / encloseDis**2 )
+
+    print( "Diou: " + str(diou) + " centerDistance: " + str(centerDis) + " encloseDis: " + str(encloseDis) + " iou: " + str(iou) )
+    return ( int(exA), int(eyA), int(exB), int(eyB), int(centerGTX), int(centerGTY), int(centerPX), int(centerPY) )
     
 
 
 def ciouCoef( boxGT, boxP ):
 
-     center_vec = boxGT[..., :2] - boxP[..., :2]
+     center_vec = abs( ( boxGT[..., :2] + boxGT[..., 2:] ) * 0.5 - ( boxP[..., :2] + boxP[..., 2:] ) * 0.5 )
 
      boxGT = tf.concat([boxGT[..., :2] - boxGT[..., 2:] * 0.5,
                          boxGT[..., :2] + boxGT[..., 2:] * 0.5], axis=-1)
@@ -136,8 +141,8 @@ def ciouCoef( boxGT, boxP ):
      center_dis = tf.sqrt( center_vec[..., 0]**2 + center_vec[..., 1]**2 )
      enclose_dis = tf.sqrt( enclose_vec[..., 0]**2 + enclose_vec[..., 1]**2 )
 
-     diou = iou - ( center_dis / enclose_dis )
+     diou = iou - ( center_dis**2 / enclose_dis**2 )
 
-     return diou
+     return -diou
 
     
