@@ -11,15 +11,8 @@ import numpy as np
 
 import dataReader as reader
 from utils import *
+from losses import *
 
-'''
-testData = reader.readAndLoadData( Configuration.testImages, Configuration.testGT, Configuration.testUsage )
-testImages = [ img.data for img in testData ]
-testBbox = [ [ img.box.min.x, img.box.min.y, img.box.max.x, img.box.max.y ] for img in testData ]
-
-testBbox = np.array( testBbox, dtype = "float32")
-testImages = np.array( testImages, dtype = "float32") / 255.0 
-'''
 
 trainData = reader.readAndLoadData( Configuration.trainImages, Configuration.trainGT, Configuration.trainUsage )
 trainImages = [ img.data for img in trainData ]
@@ -28,8 +21,11 @@ trainBbox = [ [ img.box.min.x, img.box.min.y, img.box.max.x, img.box.max.y ] for
 trainBbox = np.array( trainBbox, dtype = "float32")
 trainImages = np.array( trainImages, dtype = "float32") / 255.0
 
-valImages = trainImages[400:]
-valBbox = trainBbox[400:]
+valImages = trainImages[650:]
+valBbox = trainBbox[650:]
+
+trainImages = trainImages[:650]
+trainBbox = trainBbox[:650]
 
 vgg = VGG16( weights="imagenet", include_top=False, input_tensor=Input( shape=(640, 480, 3) ) )
 print( vgg.summary() )
@@ -47,7 +43,7 @@ model = Model( inputs=vgg.input, outputs=bboxHead )
 
 #initialise optimizer, compile the model, and show the model
 opt = Adam( lr = Configuration.learningRate )
-model.compile( optimizer = opt, loss = [ciouCoef] )
+model.compile( optimizer = opt, loss = [diouCoef] )
 print( model.summary() )
 
 H = model.fit( trainImages, trainBbox,

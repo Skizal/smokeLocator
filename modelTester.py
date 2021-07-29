@@ -6,6 +6,8 @@ import numpy as np
 import dataReader as reader
 from collections import namedtuple
 from utils import *
+from losses import *
+
 import cv2
 
 nImages = 10
@@ -21,7 +23,7 @@ testImages = np.array( testImages, dtype = "float32") / 255.0
 
 model = load_model( Configuration.modelPath + 'model', compile=False )
 opt = Adam( lr = Configuration.learningRate )
-model.compile( optimizer = opt, loss = [ciouCoef] )
+model.compile( optimizer = opt, loss = [diouCoef] )
 
 predictions = model.predict( testImages )
 

@@ -62,11 +62,7 @@ def updateImagesToUse( gtPath, usePath, nImages ):
         textFile.write( e + "\n" )
     textFile.close()
 
-'''
 
-updateImagesToUse( trainGTPath, usePath1, 500 )
-updateImagesToUse( testGTPath, usePath2, 100 )
+updateImagesToUse( Configuration.trainGT, Configuration.trainUsage, 750 )
+updateImagesToUse( Configuration.testGT, Configuration.testUsage, 100 )
 
-'''
-
-#trainData = readAndLoadData( trainImagesPath, trainGTPath, usePath1 )
