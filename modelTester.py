@@ -11,8 +11,6 @@ from losses import *
 import cv2
 
 nImages = 10
-xRes = 640
-yRes = 480
 
 data = reader.readAndLoadData( Configuration.trainImages, Configuration.trainGT, Configuration.trainUsage )
 
@@ -35,7 +33,7 @@ for index, pred in enumerate( predictions ):
     max = Point( pred[2], pred[3] )
     predBox = BoundingBox( min, max )
 
-    boxGT, boxP = getBoxesWithAbsoluteIntegerValues( testData[index].box, predBox, xRes, yRes )
+    boxGT, boxP = getBoxesWithAbsoluteIntegerValues( testData[index].box, predBox, Configuration.xRes, Configuration.yRes )
 
     sample.append( Detection( testData[index].path, boxGT, boxP ) ) 
 

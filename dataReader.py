@@ -1,5 +1,4 @@
 import os
-import random
 
 import xml.etree.ElementTree as xml
 
@@ -50,19 +49,4 @@ def readAndLoadData( imagesPath, gtPath, imagesToUsePath ):
             imageData[image.name] = image
 
     return list( imageData.values() )
-     
-
-def updateImagesToUse( gtPath, usePath, nImages ):
-
-    list = os.listdir( gtPath )
-    random.shuffle( list )
-    textFile = open( usePath , "w" )
-    for elem in list[:nImages]:
-        e = elem.replace( '.xml', '' )
-        textFile.write( e + "\n" )
-    textFile.close()
-
-
-updateImagesToUse( Configuration.trainGT, Configuration.trainUsage, 750 )
-updateImagesToUse( Configuration.testGT, Configuration.testUsage, 100 )
-
+    

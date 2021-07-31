@@ -1,6 +1,8 @@
 import os
 import cv2
-import xml.etree.ElementTree as xml
+import xml.etree.ElementTree as xml 
+from utils import Configuration
+import random
 
 
 #bbox is changed from absolute to relative size. 
@@ -52,13 +54,20 @@ def convert( imagesPath, gtPath, newResX, newResY ):
         cv2.imwrite( entry.path, newImage )
     
 
-'''
-imagesPath = '/home/enrique/tfm/data/day_time_wildfire_v2_2192/images'
-gtPath = '/home/enrique/tfm/data/day_time_wildfire_v2_2192/annotations/xmls'
 
-'''
-imagesPath = '/home/enrique/tfm/data/SF_dataset_resized_12620/images'
-gtPath = '/home/enrique/tfm/data/SF_dataset_resized_12620/annotations'
+def updateImagesToUse( gtPath, usePath, nImages ):
+
+    list = os.listdir( gtPath )
+    random.shuffle( list )
+    textFile = open( usePath , "w" )
+    for elem in list[:nImages]:
+        e = elem.replace( '.xml', '' )
+        textFile.write( e + "\n" )
+    textFile.close()
 
 
-#convert( imagesPath, gtPath, 640, 480 )
+updateImagesToUse( Configuration.trainGT, Configuration.trainUsage, 2000 )
+updateImagesToUse( Configuration.testGT, Configuration.testUsage, 1000 )
+
+
+#convert( Configuration.testImages, Configuration.testGT, 480, 360 )

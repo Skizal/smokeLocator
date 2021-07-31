@@ -35,6 +35,9 @@ class Configuration:
 
      learningRate: float = 1e-4
 
+     xRes: int = 480
+     yRes: int = 360
+
 @dataclass
 class Detection:
      imagePath: str

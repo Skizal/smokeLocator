@@ -21,13 +21,13 @@ trainBbox = [ [ img.box.min.x, img.box.min.y, img.box.max.x, img.box.max.y ] for
 trainBbox = np.array( trainBbox, dtype = "float32")
 trainImages = np.array( trainImages, dtype = "float32") / 255.0
 
-valImages = trainImages[650:]
-valBbox = trainBbox[650:]
+valImages = trainImages[1500:]
+valBbox = trainBbox[1500:]
 
-trainImages = trainImages[:650]
-trainBbox = trainBbox[:650]
+trainImages = trainImages[:1500]
+trainBbox = trainBbox[:1500]
 
-vgg = VGG16( weights="imagenet", include_top=False, input_tensor=Input( shape=(640, 480, 3) ) )
+vgg = VGG16( weights="imagenet", include_top=False, input_tensor=Input( shape=( Configuration.xRes, Configuration.yRes, 3) ) )
 print( vgg.summary() )
 vgg.trainable = False
 
