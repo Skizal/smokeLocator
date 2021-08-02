@@ -14,18 +14,18 @@ from utils import *
 from losses import *
 
 
-trainData = reader.readAndLoadData( Configuration.trainImages, Configuration.trainGT, Configuration.trainUsage )
+trainData = reader.readAndLoadData( Configuration.testImages, Configuration.testGT, Configuration.testUsage )
 trainImages = [ img.data for img in trainData ]
 trainBbox = [ [ img.box.min.x, img.box.min.y, img.box.max.x, img.box.max.y ] for img in trainData ]
 
 trainBbox = np.array( trainBbox, dtype = "float32")
 trainImages = np.array( trainImages, dtype = "float32") / 255.0
 
-valImages = trainImages[1500:]
-valBbox = trainBbox[1500:]
+valImages = trainImages[1600:]
+valBbox = trainBbox[1600:]
 
-trainImages = trainImages[:1500]
-trainBbox = trainBbox[:1500]
+trainImages = trainImages[:1600]
+trainBbox = trainBbox[:1600]
 
 vgg = VGG16( weights="imagenet", include_top=False, input_tensor=Input( shape=( Configuration.xRes, Configuration.yRes, 3) ) )
 print( vgg.summary() )
@@ -52,7 +52,21 @@ H = model.fit( trainImages, trainBbox,
     epochs = Configuration.nEpochs,
     verbose=1)
 
+for layer in model.layers[15:]:
+	layer.trainable = True
+# loop over the layers in the model and show which ones are trainable
+# or not
+for layer in model.layers:
+	print("{}: {}".format(layer, layer.trainable))
+
+H = model.fit( trainImages, trainBbox,
+    validation_data= ( valImages, valBbox ),
+    batch_size = Configuration.batchSize,
+    epochs = Configuration.nEpochs,
+    verbose=1)
+
 # plot the model training history
+'''
 N = Configuration.nEpochs
 plt.style.use("ggplot")
 plt.figure()
@@ -61,7 +75,8 @@ plt.title("Bounding Box Regression Loss on Training Set")
 plt.xlabel("Epoch #")
 plt.ylabel("Loss")
 plt.legend(loc="lower left")
+'''
 
 print( "[INFO] Saving trained model to disk: " + Configuration.modelPath + "model" )
-model.save( Configuration.modelPath + "model", save_format="h5" )
+model.save( Configuration.modelPath + "modelC", save_format="h5" )
 

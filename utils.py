@@ -31,7 +31,7 @@ class Configuration:
      plotPath: str = '/home/enrique/tfm/output/plot/'
 
      batchSize: int = 10
-     nEpochs: int = 10
+     nEpochs: int = 30
 
      learningRate: float = 1e-4
 
