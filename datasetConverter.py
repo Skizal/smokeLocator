@@ -66,8 +66,8 @@ def updateImagesToUse( gtPath, usePath, nImages ):
     textFile.close()
 
 
-updateImagesToUse( Configuration.trainGT, Configuration.trainUsage, 1800 )
-updateImagesToUse( Configuration.testGT, Configuration.testUsage, 1800 )
+updateImagesToUse( Configuration.trainGT[0], Configuration.trainUsage[0], 2000 )
+updateImagesToUse( Configuration.trainGT[1], Configuration.trainUsage[1], 2000 )
 
 
 #convert( Configuration.testImages, Configuration.testGT, 480, 360 )

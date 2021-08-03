@@ -35,7 +35,7 @@ def readAndLoadData( imagesPath, gtPath, imagesToUsePath ):
         if nameNoXml in imagesToUse:
 
             image = getImageAndBbox( entry.path )
-            print( "Image data: ", image.name, image.box.min.x, image.box.min.y, image.box.max.x, image.box.max.y )
+            #print( "Image data: ", image.name, image.box.min.x, image.box.min.y, image.box.max.x, image.box.max.y )
             imageData[image.name] = image
         
     for entry in os.scandir( imagesPath ):

@@ -1,10 +1,9 @@
-from tensorflow import keras
-import tensorflow_addons as tfa
 
-from keras.applications import VGG16
-from keras.models import Model
-from keras.layers import Dense, Flatten, Input
-from keras.optimizers import Adam
+from tensorflow.keras.applications import VGG16
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, Flatten, Input
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -12,71 +11,71 @@ import numpy as np
 import dataReader as reader
 from utils import *
 from losses import *
+import sys
+import gc
 
+for index, trainSet in enumerate( Configuration.trainImages ):
+    for lRate in Configuration.learningRate:
+        for batch in Configuration.batchSize:
+        
+            sys.stdout = open(str( Configuration.modelPath + "LOG_" + str(index) + "_" + str(batch) + "_" + str(lRate) ), 'w')
 
-trainData = reader.readAndLoadData( Configuration.testImages, Configuration.testGT, Configuration.testUsage )
-trainImages = [ img.data for img in trainData ]
-trainBbox = [ [ img.box.min.x, img.box.min.y, img.box.max.x, img.box.max.y ] for img in trainData ]
+            trainData = reader.readAndLoadData( Configuration.trainImages[index], Configuration.trainGT[index], Configuration.trainUsage[index] )
+            trainImages = [ img.data for img in trainData ]
+            trainBbox = [ [ img.box.min.x, img.box.min.y, img.box.max.x, img.box.max.y ] for img in trainData ]
 
-trainBbox = np.array( trainBbox, dtype = "float32")
-trainImages = np.array( trainImages, dtype = "float32") / 255.0
+            trainBbox = np.array( trainBbox, dtype = "float32")
+            trainImages = np.array( trainImages, dtype = "float32") / 255.0
 
-valImages = trainImages[1600:]
-valBbox = trainBbox[1600:]
+            valImages = trainImages[1800:]
+            valBbox = trainBbox[1800:]
 
-trainImages = trainImages[:1600]
-trainBbox = trainBbox[:1600]
+            trainImages = trainImages[:1800]
+            trainBbox = trainBbox[:1800]
 
-vgg = VGG16( weights="imagenet", include_top=False, input_tensor=Input( shape=( Configuration.xRes, Configuration.yRes, 3) ) )
-print( vgg.summary() )
-vgg.trainable = False
+            vgg = VGG16( weights="imagenet", include_top=False, input_tensor=Input( shape=( Configuration.xRes, Configuration.yRes, 3) ) )
+            print( vgg.summary() )
+            vgg.trainable = False
 
-flatten = vgg.output
-flatten = Flatten()(flatten)
+            flatten = vgg.output
+            flatten = Flatten()(flatten)
 
-bboxHead = Dense(128, activation="relu" )(flatten)
-bboxHead = Dense(64, activation="relu" )(bboxHead) 
-bboxHead = Dense(32, activation="relu" )(bboxHead)
-bboxHead = Dense(4, activation="sigmoid" )(bboxHead)
+            bboxHead = Dense(128, activation="relu" )(flatten)
+            bboxHead = Dense(64, activation="relu" )(bboxHead) 
+            bboxHead = Dense(32, activation="relu" )(bboxHead)
+            bboxHead = Dense(4, activation="sigmoid" )(bboxHead)
 
-model = Model( inputs=vgg.input, outputs=bboxHead )
+            model = Model( inputs=vgg.input, outputs=bboxHead )
 
-#initialise optimizer, compile the model, and show the model
-opt = Adam( lr = Configuration.learningRate )
-model.compile( optimizer = opt, loss = [diouCoef] )
-print( model.summary() )
+            #initialise optimizer, compile the model, and show the model
+            opt = Adam( lr = lRate )
+            model.compile( optimizer = opt, loss = [diouCoef] )
+            #print( model.summary() )
 
-H = model.fit( trainImages, trainBbox,
-    validation_data= ( valImages, valBbox ),
-    batch_size = Configuration.batchSize,
-    epochs = Configuration.nEpochs,
-    verbose=1)
+            H = model.fit( trainImages, trainBbox,
+                validation_data= ( valImages, valBbox ),
+                batch_size = batch,
+                epochs = Configuration.nEpochs,
+                verbose=2)
 
-for layer in model.layers[15:]:
-	layer.trainable = True
-# loop over the layers in the model and show which ones are trainable
-# or not
-for layer in model.layers:
-	print("{}: {}".format(layer, layer.trainable))
+            for layer in model.layers[15:]:
+                layer.trainable = True
 
-H = model.fit( trainImages, trainBbox,
-    validation_data= ( valImages, valBbox ),
-    batch_size = Configuration.batchSize,
-    epochs = Configuration.nEpochs,
-    verbose=1)
+            H = model.fit( trainImages, trainBbox,
+                validation_data= ( valImages, valBbox ),
+                batch_size = batch,
+                epochs = Configuration.nEpochs,
+                verbose=2)
 
-# plot the model training history
-'''
-N = Configuration.nEpochs
-plt.style.use("ggplot")
-plt.figure()
-plt.plot(np.arange(0, N), H.history['loss'], label="loss")
-plt.title("Bounding Box Regression Loss on Training Set")
-plt.xlabel("Epoch #")
-plt.ylabel("Loss")
-plt.legend(loc="lower left")
-'''
+            print( "[INFO] Saving trained model to disk: " + Configuration.modelPath + "model" )
+            model.save( Configuration.modelPath + "model_" + str(index) + "_" + str(batch) + "_" + str(lRate), save_format="h5" )
 
-print( "[INFO] Saving trained model to disk: " + Configuration.modelPath + "model" )
-model.save( Configuration.modelPath + "modelC", save_format="h5" )
+            sys.stdout.close()
+
+            del trainData
+            del trainImages
+            del trainBbox
+            del valImages
+            del valBbox
+            gc.collect()
 

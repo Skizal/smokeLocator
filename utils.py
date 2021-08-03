@@ -1,5 +1,5 @@
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 
 @dataclass
@@ -21,22 +21,18 @@ class ImageData:
 
 @dataclass
 class Configuration:
-     trainImages: str = '/home/enrique/tfm/data/SF_dataset_resized_12620/images'
-     trainGT: str = '/home/enrique/tfm/data/SF_dataset_resized_12620/annotations'
-     trainUsage: str = '/home/enrique/tfm/data/SF_dataset_resized_12620/usedImages.txt'
-     testImages: str = '/home/enrique/tfm/data/day_time_wildfire_v2_2192/images'
-     testGT: str = '/home/enrique/tfm/data/day_time_wildfire_v2_2192/annotations/xmls'
-     testUsage: str = '/home/enrique/tfm/data/day_time_wildfire_v2_2192/usedImages.txt'
-     modelPath: str = '/home/enrique/tfm/output/'
-     plotPath: str = '/home/enrique/tfm/output/plot/'
+     trainImages = [ '/home/enrique/tfm/data/SF_dataset_resized_12620/images', '/home/enrique/tfm/data/day_time_wildfire_v2_2192/images' ]
+     trainGT = [ '/home/enrique/tfm/data/SF_dataset_resized_12620/annotations', '/home/enrique/tfm/data/day_time_wildfire_v2_2192/annotations/xmls' ] 
+     trainUsage = [ '/home/enrique/tfm/data/SF_dataset_resized_12620/usedImages.txt', '/home/enrique/tfm/data/day_time_wildfire_v2_2192/usedImages.txt' ]
+     modelPath = '/home/enrique/tfm/output/'
 
-     batchSize: int = 10
-     nEpochs: int = 30
+     batchSize = [1, 8, 16, 32] 
+     nEpochs = 15
 
-     learningRate: float = 1e-4
+     learningRate = [1e-4, 1e-5]
 
-     xRes: int = 480
-     yRes: int = 360
+     xRes = 480
+     yRes = 360
 
 @dataclass
 class Detection:
@@ -59,4 +55,3 @@ def getBoxesWithAbsoluteIntegerValues( boxGT, boxP, resX, resY ):
 
     return boxGT, boxP
     
-

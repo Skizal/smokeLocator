@@ -52,8 +52,6 @@ def evaluateImages():
     eval = model.evaluate()
 
 
-
-
 nImages = 10
 
 data = reader.readAndLoadData( Configuration.testImages, Configuration.testGT, Configuration.testUsage )
