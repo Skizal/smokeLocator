@@ -27,11 +27,11 @@ for index, trainSet in enumerate( Configuration.trainImages ):
             trainBbox = np.array( trainBbox, dtype = "float32")
             trainImages = np.array( trainImages, dtype = "float32") / 255.0
 
-            valImages = trainImages[1800:]
-            valBbox = trainBbox[1800:]
+            valImages = trainImages[1650:]
+            valBbox = trainBbox[1650:]
 
-            trainImages = trainImages[:1800]
-            trainBbox = trainBbox[:1800]
+            trainImages = trainImages[:1650]
+            trainBbox = trainBbox[:1650]
 
             vgg = VGG16( weights="imagenet", include_top=False, input_tensor=Input( shape=( Configuration.xRes, Configuration.yRes, 3) ) )
             print( vgg.summary() )
