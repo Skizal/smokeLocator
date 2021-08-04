@@ -55,19 +55,27 @@ def convert( imagesPath, gtPath, newResX, newResY ):
     
 
 
-def updateImagesToUse( gtPath, usePath, nImages ):
+def updateImagesToUse( gtPath, usePath, testPath, nImages ):
 
     list = os.listdir( gtPath )
     random.shuffle( list )
+
+    toUse = list[:nImages]
     textFile = open( usePath , "w" )
-    for elem in list[:nImages]:
+    for elem in toUse:
+        e = elem.replace( '.xml', '' )
+        textFile.write( e + "\n" )
+    textFile.close()
+
+    toTest = list[nImages:]
+    textFile = open( testPath , "w" )
+    for elem in toTest:
         e = elem.replace( '.xml', '' )
         textFile.write( e + "\n" )
     textFile.close()
 
 
-updateImagesToUse( Configuration.trainGT[0], Configuration.trainUsage[0], 1800 )
-updateImagesToUse( Configuration.trainGT[1], Configuration.trainUsage[1], 1800 )
-
+updateImagesToUse( Configuration.trainGT[0], Configuration.trainUsage[0], Configuration.testUsage[0], 1800 )
+updateImagesToUse( Configuration.trainGT[1], Configuration.trainUsage[1], Configuration.testUsage[1], 1800 )
 
 #convert( Configuration.testImages, Configuration.testGT, 480, 360 )

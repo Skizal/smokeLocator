@@ -5,7 +5,7 @@ import numpy as np
 import math
 
 
-def completeIou( boxGT, boxP ):
+def distanceIoUinfo( boxGT, boxP ):
 
     #determine coordinates of the intersection rectangle
     xA = max( boxGT.min.x, boxP.min.x )
@@ -47,9 +47,8 @@ def completeIou( boxGT, boxP ):
     centerDis = math.sqrt( distX**2 + distY**2 )
     encloseDis = math.sqrt( eDistX**2 + eDistY**2 )
 
-    diou = 1 - iou + ( centerDis**2 / encloseDis**2 )
+    #diou = 1 - iou + ( centerDis**2 / encloseDis**2 )
 
-    print( "Diou: " + str(diou) + " centerDistance: " + str(centerDis) + " encloseDis: " + str(encloseDis) + " iou: " + str(iou) )
     return ( int(exA), int(eyA), int(exB), int(eyB), int(centerGTX), int(centerGTY), int(centerPX), int(centerPY) )
 
 def diouCoef( boxGT, boxP ):
@@ -85,6 +84,16 @@ def diouCoef( boxGT, boxP ):
     center_dis = tf.sqrt( center_vec[..., 0]**2 + center_vec[..., 1]**2 )
     enclose_dis = tf.sqrt( enclose_vec[..., 0]**2 + enclose_vec[..., 1]**2 )
 
-    diou = 1.0 - iou + ( center_dis**2 / enclose_dis**2 )
+    #ciou bit
+    gtW =  boxGT[..., 2] - boxGT[..., 0] 
+    gtH = boxGT[..., 3] - boxGT[..., 1] 
+    predW= boxP[..., 2] - boxP[..., 0] 
+    predH = boxP[..., 3] - boxP[..., 1]
+
+    arctan = tf.atan( tf.math.divide_no_nan(gtW, gtH) ) - tf.atan( tf.math.divide_no_nan(predW, predH) )
+    v = 4 * ( (arctan / math.pi)**2 )
+    alpha = tf.math.divide_no_nan( v, ( (1 - iou ) + v ) )
+
+    diou = 1.0 - iou + ( center_dis**2 / enclose_dis**2 ) + alpha * v
 
     return diou

@@ -4,6 +4,7 @@ import xml.etree.ElementTree as xml
 
 from keras.preprocessing.image import load_img
 import numpy as np
+from tensorflow.python.ops.gen_math_ops import equal
 
 from utils import *
 
@@ -24,12 +25,12 @@ def getImageAndBbox( file ):
     return image
    
 
-def readAndLoadData( imagesPath, gtPath, imagesToUsePath ):
+def readAndLoadData( imagesPath, gtPath, imagesToUsePath, limit ):
     imageData = {}
 
     useFile = open( imagesToUsePath, "r" )
     imagesToUse = useFile.read().splitlines()
-
+    i = limit
     for entry in os.scandir( gtPath ):
         nameNoXml = entry.name.replace( '.xml', '' )
         if nameNoXml in imagesToUse:
@@ -37,7 +38,12 @@ def readAndLoadData( imagesPath, gtPath, imagesToUsePath ):
             image = getImageAndBbox( entry.path )
             #print( "Image data: ", image.name, image.box.min.x, image.box.min.y, image.box.max.x, image.box.max.y )
             imageData[image.name] = image
-        
+
+            i = i - 1
+            if i == 0:
+                i = limit
+                break
+    
     for entry in os.scandir( imagesPath ):
         if entry.name in imageData:
             #load the image
@@ -47,6 +53,11 @@ def readAndLoadData( imagesPath, gtPath, imagesToUsePath ):
             image.data = np.asarray( iData )
             image.data = np.swapaxes( image.data, 0, 1)
             imageData[image.name] = image
+
+            i = i - 1
+            if i == 0:
+                i = limit
+                break
 
     return list( imageData.values() )
     

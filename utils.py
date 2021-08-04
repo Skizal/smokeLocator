@@ -24,12 +24,15 @@ class Configuration:
      trainImages = [ '/home/enrique/tfm/data/SF_dataset_resized_12620/images', '/home/enrique/tfm/data/day_time_wildfire_v2_2192/images' ]
      trainGT = [ '/home/enrique/tfm/data/SF_dataset_resized_12620/annotations', '/home/enrique/tfm/data/day_time_wildfire_v2_2192/annotations/xmls' ] 
      trainUsage = [ '/home/enrique/tfm/data/SF_dataset_resized_12620/usedImages.txt', '/home/enrique/tfm/data/day_time_wildfire_v2_2192/usedImages.txt' ]
+     testUsage = [ '/home/enrique/tfm/data/SF_dataset_resized_12620/testImages.txt', '/home/enrique/tfm/data/day_time_wildfire_v2_2192/testImages.txt' ]
      modelPath = '/home/enrique/tfm/output/'
 
      batchSize = [1, 8, 16, 32] 
-     nEpochs = 15
+     nEpochs = 25
 
      learningRate = [1e-4, 1e-5]
+
+     limitImages = 1800
 
      xRes = 480
      yRes = 360

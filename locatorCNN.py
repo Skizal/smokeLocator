@@ -20,7 +20,7 @@ for index, trainSet in enumerate( Configuration.trainImages ):
         
             sys.stdout = open(str( Configuration.modelPath + "LOG_" + str(index) + "_" + str(batch) + "_" + str(lRate) ), 'w')
 
-            trainData = reader.readAndLoadData( Configuration.trainImages[index], Configuration.trainGT[index], Configuration.trainUsage[index] )
+            trainData = reader.readAndLoadData( Configuration.trainImages[index], Configuration.trainGT[index], Configuration.trainUsage[index], Configuration.limitImages )
             trainImages = [ img.data for img in trainData ]
             trainBbox = [ [ img.box.min.x, img.box.min.y, img.box.max.x, img.box.max.y ] for img in trainData ]
 
