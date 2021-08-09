@@ -15,67 +15,69 @@ import sys
 import gc
 
 for index, trainSet in enumerate( Configuration.trainImages ):
-    for lRate in Configuration.learningRate:
-        for batch in Configuration.batchSize:
-        
-            sys.stdout = open(str( Configuration.modelPath + "LOG_" + str(index) + "_" + str(batch) + "_" + str(lRate) ), 'w')
+#     for lRate in Configuration.learningRate:
+#         for batch in Configuration.batchSize:
 
-            trainData = reader.readAndLoadData( Configuration.trainImages[index], Configuration.trainGT[index], Configuration.trainUsage[index], Configuration.limitImages )
-            trainImages = [ img.data for img in trainData ]
-            trainBbox = [ [ img.box.min.x, img.box.min.y, img.box.max.x, img.box.max.y ] for img in trainData ]
+    sys.stdout = open(str( Configuration.modelPath + "LOG_" + str(index) + "_" + str(Configuration.batchSize[1]) + "_" + str(Configuration.learningRate[0]) ), 'w')
 
-            trainBbox = np.array( trainBbox, dtype = "float32")
-            trainImages = np.array( trainImages, dtype = "float32") / 255.0
+    trainData = reader.readAndLoadData( Configuration.trainImages[index], Configuration.trainGT[index], Configuration.trainUsage[index], Configuration.limitImages )
+    trainImages = [ img.data for img in trainData ]
+    trainBbox = [ [ img.box.min.x, img.box.min.y, img.box.max.x, img.box.max.y ] for img in trainData ]
 
-            valImages = trainImages[1650:]
-            valBbox = trainBbox[1650:]
+    trainBbox = np.array( trainBbox, dtype = "float32")
+    trainImages = np.array( trainImages, dtype = "float32") / 255.0
 
-            trainImages = trainImages[:1650]
-            trainBbox = trainBbox[:1650]
+    # valImages = trainImages[1650:]
+    # valBbox = trainBbox[1650:]
 
-            vgg = VGG16( weights="imagenet", include_top=False, input_tensor=Input( shape=( Configuration.xRes, Configuration.yRes, 3) ) )
-            print( vgg.summary() )
-            vgg.trainable = False
+    # trainImages = trainImages[:1650]
+    # trainBbox = trainBbox[:1650]
 
-            flatten = vgg.output
-            flatten = Flatten()(flatten)
+    vgg = VGG16( weights="imagenet", include_top=False, input_tensor=Input( shape=( Configuration.xRes, Configuration.yRes, 3) ) )
+    print( vgg.summary() )
+    vgg.trainable = False
 
-            bboxHead = Dense(128, activation="relu" )(flatten)
-            bboxHead = Dense(64, activation="relu" )(bboxHead) 
-            bboxHead = Dense(32, activation="relu" )(bboxHead)
-            bboxHead = Dense(4, activation="sigmoid" )(bboxHead)
+    flatten = vgg.output
+    flatten = Flatten()(flatten)
 
-            model = Model( inputs=vgg.input, outputs=bboxHead )
+    bboxHead = Dense(128, activation="relu" )(flatten)
+    bboxHead = Dense(64, activation="relu" )(bboxHead) 
+    bboxHead = Dense(32, activation="relu" )(bboxHead)
+    bboxHead = Dense(4, activation="sigmoid" )(bboxHead)
 
-            #initialise optimizer, compile the model, and show the model
-            opt = Adam( lr = lRate )
-            model.compile( optimizer = opt, loss = [diouCoef] )
-            #print( model.summary() )
+    model = Model( inputs=vgg.input, outputs=bboxHead )
 
-            H = model.fit( trainImages, trainBbox,
-                validation_data= ( valImages, valBbox ),
-                batch_size = batch,
-                epochs = Configuration.nEpochs,
-                verbose=2)
+    #initialise optimizer, compile the model, and show the model
+    opt = Adam( lr = Configuration.learningRate[0] )
+    model.compile( optimizer = opt, loss = [ciouCoef] )
+    #print( model.summary() )
 
-            for layer in model.layers[15:]:
-                layer.trainable = True
+    H = model.fit( trainImages, trainBbox,
+        batch_size = Configuration.batchSize[1],
+        epochs = Configuration.nEpochs,
+        verbose=2)
 
-            H = model.fit( trainImages, trainBbox,
-                validation_data= ( valImages, valBbox ),
-                batch_size = batch,
-                epochs = Configuration.nEpochs,
-                verbose=2)
+    for layer in model.layers[15:]:
+        layer.trainable = True
 
-            print( "[INFO] Saving trained model to disk: " + Configuration.modelPath + "model" )
-            model.save( Configuration.modelPath + "model_" + str(index) + "_" + str(batch) + "_" + str(lRate), save_format="h5" )
+    H = model.fit( trainImages, trainBbox,
+        batch_size = Configuration.batchSize[1],
+        epochs = Configuration.nEpochs,
+        verbose=2)
+    
+        # H = model.fit( trainImages, trainBbox,
+        # validation_data= ( valImages, valBbox ),
+        # batch_size = Configuration.batchSize[1],
+        # epochs = Configuration.nEpochs,
+        # verbose=2)
 
-            sys.stdout.close()
+    print( "[INFO] Saving trained model to disk: " + Configuration.modelPath + "model" )
+    model.save( Configuration.modelPath + "model_" + str(index) + "_" + str(Configuration.batchSize[1]) + "_" + str( Configuration.learningRate[0] ), save_format="h5" )
 
-            del trainData
-            del trainImages
-            del trainBbox
-            del valImages
-            del valBbox
-            gc.collect()
+    sys.stdout.close()
+
+    del trainData
+    del trainImages
+    del trainBbox
+    gc.collect()
 

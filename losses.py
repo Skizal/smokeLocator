@@ -51,7 +51,7 @@ def distanceIoUinfo( boxGT, boxP ):
 
     return ( int(exA), int(eyA), int(exB), int(eyB), int(centerGTX), int(centerGTY), int(centerPX), int(centerPY) )
 
-def diouCoef( boxGT, boxP ):
+def ciouCoef( boxGT, boxP ):
 
     center_vec = tf.math.abs( ( boxGT[..., :2] + boxGT[..., 2:] ) * 0.5 - ( boxP[..., :2] + boxP[..., 2:] ) * 0.5 )
 

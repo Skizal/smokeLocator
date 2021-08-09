@@ -27,8 +27,8 @@ class Configuration:
      testUsage = [ '/home/enrique/tfm/data/SF_dataset_resized_12620/testImages.txt', '/home/enrique/tfm/data/day_time_wildfire_v2_2192/testImages.txt' ]
      modelPath = '/home/enrique/tfm/output/'
 
-     batchSize = [1, 8, 16, 32] 
-     nEpochs = 25
+     batchSize = [ 8, 16, 32 ] 
+     nEpochs = 50
 
      learningRate = [1e-4, 1e-5]
 

@@ -15,10 +15,10 @@ def predictAndShowImages():
     
     pred= model.predict( testImages )
     eval = model.evaluate( testImages, testBbox )
-    print( pred )
+    #print( pred )
     print( eval )
 
-    for index, val in enumerate(testImages):
+    for index, val in enumerate(testImages[:nImages]):
         min = Point( pred[index][0], pred[index][1] )        
         max = Point( pred[index][2], pred[index][3] )
         predBox = BoundingBox( min, max )
@@ -49,10 +49,10 @@ def predictAndShowImages():
 
 nImages = 10
 
-data = reader.readAndLoadData( Configuration.trainImages[0], Configuration.trainGT[0], Configuration.testUsage[0], Configuration.limitImages )
+data = reader.readAndLoadData( Configuration.trainImages[0], Configuration.trainGT[0], Configuration.testUsage[0], 1500 )
 
 #random.shuffle( data )
-testData = data[:nImages]
+testData = data
 
 testImages = [ img.data for img in testData ]
 testBbox = [ [ img.box.min.x, img.box.min.y, img.box.max.x, img.box.max.y ] for img in testData ]
@@ -61,8 +61,8 @@ testImages = np.array( testImages, dtype = "float32") / 255.0
 testBbox = np.array( testBbox, dtype = "float32")
 
 
-model = load_model( Configuration.modelPath + "/25epochs/model_" + str(0) + "_" + str(Configuration.batchSize[2]) + "_" + str(Configuration.learningRate[0]), compile=False )
+model = load_model( Configuration.modelPath + "model_" + str(0) + "_" + str(Configuration.batchSize[1]) + "_" + str(Configuration.learningRate[0]), compile=False )
 opt = Adam( lr = Configuration.learningRate[0] )
-model.compile( optimizer = opt, loss = [diouCoef] )
+model.compile( optimizer = opt, loss = [ciouCoef] )
 
 predictAndShowImages()
